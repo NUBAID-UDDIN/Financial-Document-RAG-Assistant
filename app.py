@@ -27,8 +27,7 @@ MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", "15"))
 
 app = Flask(__name__)
 # Set FLASK_SECRET_KEY in .env for stable signed sessions across restarts.
-# A random fallback is safer than a hard-coded secret for local development,
-# but invalidates sessions after restart; set the environment value in deployment.
+# A random fallback is safer than a hard-coded secret for local development,but invalidates sessions after restart; set the environment value in deployment.
 app.secret_key = os.getenv("FLASK_SECRET_KEY") or secrets.token_hex(32)
 app.config["MAX_CONTENT_LENGTH"] = MAX_UPLOAD_MB * 1024 * 1024
 app.config["SESSION_COOKIE_HTTPONLY"] = True
@@ -36,8 +35,7 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.getenv("COOKIE_SECURE", "false").lower() == "true"
 limiter = Limiter(get_remote_address, app=app, default_limits=["50 per hour"])
 
-# Note: this in-memory state is for a single-process prototype. A multi-worker
-# deployment should move session/document state to durable, tenant-scoped storage.
+# Note: this in-memory state is for a single-process prototype. A multi-worker deployment should move session/document state to durable, tenant-scoped storage.
 sessions: dict[str, dict] = {}
 
 
