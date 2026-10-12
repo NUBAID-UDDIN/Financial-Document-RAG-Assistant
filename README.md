@@ -149,6 +149,7 @@ invoice-ai/
 │       └── reset.js        # Session + history clearing
 │
 ├── uploads/                 # Uploaded PDFs (created automatically)
+├── tests/
 ├── .env.example
 ├── requirements.txt
 └── README.md
@@ -208,55 +209,67 @@ Visit `http://127.0.0.1:5000`.
 
 ---
 
-## 🧪 Running the Evaluation Harness
+## Evaluation: how to calculate honest metrics
 
-```bash
-python evaluation.py uploads/your_invoice.pdf
+Do not quote a metric unless you can rerun it using the exact evaluation set. The older committed test set contained unverified placeholder values and special handling that incorrectly counted unanswerable questions as retrieval hits. The updated evaluator requires ground truth to be manually checked against the exact invoice PDF.
+
+### 1. Create a test-case template
+
+```powershell
+python evaluation.py --make-template eval_cases.json
 ```
 
-This measures three separate things, not one pass/fail number:
+Open the invoice PDF and fill in each `accepted_answers` and `evidence_terms` array. For a field that is genuinely absent, set `answerable` to `false` only after checking every page. Keep the out-of-document control question to test whether the assistant abstains.
 
-```text
-Retrieval Hit Rate : did FAISS retrieve the chunk containing the right answer?
-Answer Accuracy    : did the final LLM answer contain the correct value?
-Avg Latency        : how long retrieval + generation took, per question
+Example **schema only** (the values below are illustrative, not a result from this repository):
+
+```json
+{
+  "test_cases": [
+    {
+      "id": "invoice_number",
+      "question": "What is the invoice number?",
+      "answerable": true,
+      "accepted_answers": ["COPY_REAL_VALUE_FROM_PDF"],
+      "evidence_terms": ["COPY_REAL_VALUE_FROM_PDF"],
+      "match_mode": "text"
+    },
+    {
+      "id": "amount",
+      "question": "What is the total amount due?",
+      "answerable": true,
+      "accepted_answers": ["COPY_REAL_AMOUNT_FROM_PDF"],
+      "evidence_terms": ["COPY_REAL_AMOUNT_FROM_PDF"],
+      "match_mode": "number"
+    },
+    {
+      "id": "outside_question",
+      "question": "What is the capital of France?",
+      "answerable": false,
+      "accepted_answers": [],
+      "evidence_terms": [],
+      "match_mode": "text"
+    }
+  ]
+}
 ```
 
-> **Important:** the test cases in `evaluation.py` contain placeholder expected values. Before running it on your own invoice, open the PDF and update `TEST_CASES` with the real vendor name, invoice number, total, and due date from *that specific document*. An evaluation script is only as honest as its ground truth — this is a deliberate design choice, not an oversight.
+Do not leave `COPY_REAL...` placeholders in the file. The evaluator validates the case file and refuses to calculate if the ground truth is missing.
 
-A detailed JSON report is saved to `eval_report.json` after each run.
+### 2. Run evaluation
 
----
-
-## 💬 Example Queries
-
-```text
-What is the invoice number?
-What is the total amount due?
-Who is the vendor?
-What is the due date?
-List all line items.
-What are the payment terms?
+```powershell
+python evaluation.py path\to\invoice.pdf --cases eval_cases.json --output eval_report.json --k 4
 ```
 
----
+The script reports:
 
-## 📌 Example Response
+- **Retrieval hit rate:** among answerable questions only, how often annotated evidence terms appear in at least one retrieved chunk. Unanswerable questions are excluded from this denominator.
+- **Answer accuracy:** the fraction of all labeled questions where the final answer matches a verified accepted answer, or the system abstains on a labeled unanswerable question.
+- **Abstention accuracy:** among unanswerable questions, how often the assistant abstains.
+- **Latency:** wall-clock time for retrieval and generation, including API/network time.
 
-```text
-Question: What is the total amount due?
-
-Answer: The total amount due is ₹1,91,129.90.
-
-Citation:
-  File: invoice.pdf · Page 1 · Relevance: 87%
-  Excerpt: "TOTAL DUE: ₹1,91,129.90"
-```
-
-If the answer isn't in the document:
-```text
-Answer: Not found in document.
-```
+The JSON report records each question, generated answer, retrieval result, latency, errors, and the metric definitions. Evidence-term matching is a transparent proxy, not a full human semantic relevance assessment. Small test sets have high uncertainty.
 
 ---
 
