@@ -1,1 +1,95 @@
-
+{
+  "instructions": "Edit each answerable case using the exact PDF as ground truth. If a requested field is genuinely absent after checking all pages, mark answerable=false. Do not leave placeholder/empty answers for answerable cases.",
+  "test_cases": [
+    {
+      "id": "invoice_number",
+      "question": "What is the invoice number?",
+      "answerable": true,
+      "accepted_answers": [],
+      "evidence_terms": [],
+      "match_mode": "text",
+      "notes": "Copy the exact invoice number from the PDF. Add valid alternative formats to accepted_answers if needed."
+    },
+    {
+      "id": "vendor",
+      "question": "Who is the vendor?",
+      "answerable": true,
+      "accepted_answers": [],
+      "evidence_terms": [],
+      "match_mode": "text",
+      "notes": "Use the vendor name exactly as it appears in the PDF."
+    },
+    {
+      "id": "total_amount",
+      "question": "What is the total amount due?",
+      "answerable": true,
+      "accepted_answers": [],
+      "evidence_terms": [],
+      "match_mode": "number",
+      "notes": "Use the actual amount. Include alternate decimal/currency display forms if appropriate."
+    },
+    {
+      "id": "due_date",
+      "question": "What is the due date?",
+      "answerable": true,
+      "accepted_answers": [],
+      "evidence_terms": [],
+      "match_mode": "text",
+      "notes": "If the PDF does not contain a due date, set answerable=false and accepted_answers=[] after verifying the whole document."
+    },
+    {
+      "id": "client",
+      "question": "Who is the client or bill-to party?",
+      "answerable": true,
+      "accepted_answers": [],
+      "evidence_terms": [],
+      "match_mode": "text",
+      "notes": "Use the exact client name shown in the document."
+    },
+    {
+      "id": "invoice_date",
+      "question": "What is the invoice date?",
+      "answerable": true,
+      "accepted_answers": [],
+      "evidence_terms": [],
+      "match_mode": "text",
+      "notes": "Use the date format shown on the invoice, plus any equivalent accepted date formatting."
+    },
+    {
+      "id": "tax_amount",
+      "question": "What tax amount is shown on the invoice?",
+      "answerable": true,
+      "accepted_answers": [],
+      "evidence_terms": [],
+      "match_mode": "number",
+      "notes": "If there is no tax field, mark answerable=false after checking the entire PDF."
+    },
+    {
+      "id": "payment_terms",
+      "question": "What are the payment terms?",
+      "answerable": true,
+      "accepted_answers": [],
+      "evidence_terms": [],
+      "match_mode": "text",
+      "notes": "Add a concise exact phrase or acceptable equivalent from the invoice."
+    },
+    {
+      "id": "line_items",
+      "question": "List the main line items on the invoice.",
+      "answerable": true,
+      "accepted_answers": [],
+      "evidence_terms": [],
+      "match_mode": "text",
+      "notes": "Enter a short exact item/product phrase that appears in the invoice. If line items are absent, mark answerable=false after reviewing all pages."
+    },
+    {
+      "id": "unanswerable_control",
+      "question": "What is the capital of France?",
+      "answerable": false,
+      "accepted_answers": [],
+      "evidence_terms": [],
+      "match_mode": "text",
+      "notes": "A known out-of-document control. Correct answer behavior is abstention, not a factual answer."
+    }
+  ]
+}
