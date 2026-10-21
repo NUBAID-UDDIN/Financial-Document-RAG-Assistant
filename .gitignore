@@ -21,4 +21,6 @@ __pycache__/
 
 # OS files
 .DS_Store
-Thumbs.db
+Thumbs.db# Evaluation output and private ground-truth labels
+eval_report.json
+eval_cases.json
